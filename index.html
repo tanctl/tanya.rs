@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>~/tanya</title>
+    <style>
+        /* Import IBM Plex Mono font */
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&display=swap');
+        
+        /* CSS Variables for consistent theming */
+        :root {
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #1a1a1a;
+            --text-primary: #e5e5e5;
+            --text-secondary: #a0a0a0;
+            --accent-pink: #bc8f8f;
+            --accent-pink-hover: #ffb6c1;
+            --border-color: #2a2a2a;
+            --shadow-color: rgba(212, 165, 165, 0.1);
+            --gradient-start: rgba(64, 64, 64, 0.1);
+            --gradient-end: rgba(32, 32, 32, 0.1);
+        }
+        
+        /* Text selection styling */
+        ::selection {
+            background-color: var(--accent-pink);
+            color: var(--bg-primary);
+        }
+        
+        ::-moz-selection {
+            background-color: var(--accent-pink);
+            color: var(--bg-primary);
+        }
+        
+        /* Base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'IBM Plex Mono', monospace;
+            background: var(--bg-primary);
+            background-image: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-size: 16px;
+            font-weight: 400;
+            overflow-x: hidden;
+        }
+        
+        /* Scroll progress bar */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 3px;
+            background: var(--border-color);
+            z-index: 1000;
+        }
+        
+        .scroll-progress-fill {
+            height: 0%;
+            width: 100%;
+            background: linear-gradient(to bottom, var(--accent-pink), var(--border-color));
+            transition: height 0.1s ease;
+        }
+        
+        /* Main container with consistent left padding */
+        .container {
+            max-width: 900px;
+            margin: 0;
+            padding: 60px 40px 60px 120px;
+            min-height: 100vh;
+        }
+        
+        /* Section spacing */
+        section {
+            margin-bottom: 20px;
+            opacity: 0;
+            transform: translateX(-20px);
+            animation: fadeInLeft 0.8s ease forwards;
+        }
+        
+        section:nth-child(1) { animation-delay: 0.1s; }
+        section:nth-child(2) { animation-delay: 0.2s; }
+        section:nth-child(3) { animation-delay: 0.3s; }
+        section:nth-child(4) { animation-delay: 0.4s; }
+        section:nth-child(5) { animation-delay: 0.5s; }
+        
+        /* Additional spacing for specific sections */
+        section:nth-child(4), /* Recent Writing section */
+        section:nth-child(5) { /* Contact section */
+            margin-top: 60px;
+        }
+        
+        @keyframes fadeInLeft {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* Typography */
+        h1 {
+            font-size: 2.3rem;
+            font-weight: 500;
+            color: var(--accent-pink);
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--accent-pink);
+            margin-bottom: 16px;
+            text-transform: none;
+            letter-spacing: 0.02em;
+        }
+        
+        h3 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            max-width: 600px;
+            font-size: 1rem;
+        }
+        
+        /* Links */
+        a {
+            color: var(--accent-pink);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        a:hover {
+            color: var(--accent-pink-hover);
+        }
+        
+        a:focus {
+            outline: 2px solid var(--accent-pink);
+            outline-offset: 2px;
+        }
+        
+        /* Resume download button */
+        .resume-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: transparent;
+            border: 1px solid var(--accent-pink);
+            color: var(--accent-pink);
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 0 24px 0;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            transform: skew(0deg);
+        }
+        
+        .resume-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--accent-pink-hover);
+            opacity: 0.10;
+            transition: left 0.5s ease;
+            z-index: -1;
+        }
+        
+        .resume-btn:hover {
+            color: var(--text-primary);
+            transform: skew(-5deg);
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        
+        .resume-btn:hover::before {
+            left: 0;
+        }
+        
+        /* Project cards */
+        .projects-grid {
+            display: grid;
+            gap: 24px;
+            margin-top: 16px;
+        }
+        
+        .project-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-pink), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .project-card:hover::before {
+            left: 100%;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-pink);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+        
+        .project-title {
+            color: var(--text-primary);
+            font-weight: 500;
+            margin-bottom: 8px;
+            transition: color 0.3s ease;
+        }
+        
+        .project-card:hover .project-title {
+            color: var(--accent-pink);
+        }
+        
+        .project-tech {
+            color: var(--accent-pink);
+            font-size: 0.8rem;
+            font-weight: 300;
+            margin-top: 12px;
+        }
+        
+        .project-description {
+            color: var(--text-secondary);
+            margin: 12px 0;
+            font-size: 1rem;
+        }
+        
+        .project-link {
+            font-size: 0.9rem;
+            color: var(--accent-pink);
+            opacity: 0.8;
+            position: absolute;
+            right: 24px;
+            bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .project-link:hover {
+            opacity: 1;
+        }
+        
+        /* Blog preview section */
+        .blog-preview {
+            background: var(--bg-secondary);
+            border-left: 3px solid var(--accent-pink);
+            padding: 20px 24px;
+            margin: 16px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .blog-preview:hover {
+            background: rgba(26, 26, 26, 0.8);
+            transform: translateX(4px);
+        }
+        
+        .blog-title {
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .blog-excerpt {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+        }
+        
+        .blog-date {
+            color: var(--accent-pink);
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .read-more {
+            font-size: 0.9rem;
+            color: var(--accent-pink);
+            margin-top: 8px;
+            display: inline-block;
+        }
+        
+        .blog-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: var(--accent-pink);
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .blog-link:hover {
+            color: var(--accent-pink-hover);
+            transform: translateX(4px);
+        }
+        
+        /* Contact section */
+        .contact-links {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 24px;
+        }
+        
+        .contact-link {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .contact-link:hover {
+            color: var(--accent-pink);
+            transform: translateX(4px);
+        }
+        
+        .contact-prefix {
+            color: var(--accent-pink);
+            opacity: 0.6;
+            width: 80px;
+            flex-shrink: 0;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 60px 40px 60px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            section {
+                margin-bottom: 60px;
+            }
+            
+            .scroll-progress {
+                width: 2px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 32px 40px 32px 40px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .project-card {
+                padding: 20px;
+            }
+            
+            .contact-links {
+                gap: 12px;
+            }
+            
+            .contact-prefix {
+                width: 60px;
+            }
+        }
+        
+        /* Smooth hover transitions for all interactive elements */
+        * {
+            transition-property: transform, background-color, border-color, color, opacity, box-shadow;
+            transition-duration: 0.2s;
+            transition-timing-function: ease;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        footer p {
+            margin: 0 auto;
+            max-width: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Scroll progress indicator -->
+    <div class="scroll-progress">
+        <div class="scroll-progress-fill" id="scrollProgress"></div>
+    </div>
+    
+    <div class="container">
+        <!-- Introduction Section -->
+        <section>
+            <h1>Tanya A.</h1>
+            <p>Building tools at the intersection of Cryptography, ZK, and decentralised infrastructure.</p>
+        </section>
+        
+        <!-- Resume Download -->
+        <section>
+            <a href="/resume.pdf" class="resume-btn" download>Download Resume</a>
+        </section>
+        
+        <!-- Projects Section -->
+        <section>
+            <h2>Projects</h2>
+            
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-title">
+                        Zkcat
+                    </div>
+                    <div class="project-description">
+                        Privacy-preserving document redaction tool using zero-knowledge proofs. Generates cryptographic proofs of document authenticity while allowing selective disclosure of content.
+                    </div>
+                    <div class="project-tech">Rust • CLI • ZK-Proofs</div>
+                    <a href="https://github.com/tanctl/zkcat" class="project-link">GitHub →</a>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-title">
+                        Fenestra
+                    </div>
+                    <div class="project-description">
+                        Minimal tiling window manager written in Rust. Sub-5000 LOC implementation focusing on keyboard-driven workflow and efficient memory usage.
+                    </div>
+                    <div class="project-tech">Rust • X11 • Systems</div>
+                    <a href="https://github.com/tanctl" class="project-link">GitHub →</a>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-title">
+                        Lorem
+                    </div>
+                    <div class="project-description">
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Porro sequi soluta eius veniam eligendi, sit maxime quia ipsa dolorem rerum repellat architecto
+                    </div>
+                    <div class="project-tech">Rust • Cryptography • Systems</div>
+                    <a href="https://github.com/tanctl" class="project-link">GitHub →</a>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-title">
+                        Lorem ipsum
+                    </div>
+                    <div class="project-description">
+                        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Impedit suscipit aut tempore vitae ea et cupiditate
+                    </div>
+                    <div class="project-tech">Rust • Networking • CLI</div>
+                    <a href="https://github.com/tanctl/" class="project-link">GitHub →</a>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Blog Previews -->
+        <section>
+            <h2>Recent Writing</h2>
+            
+            <div class="blog-preview">
+                <div class="blog-title">Lorem ipsum dolor sit amet, consectetur adipiscing</div>
+                <div class="blog-excerpt">
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestiae facere quidem maiores consequuntur placeat, dicta fuga aliquid sit voluptas laborum ipsum cumque aspernatur, accusamus at dolorum quibusdam quaerat minus nostrum
+                </div>
+                <div class="blog-date">March 2025</div>
+                <a href="/blog" class="read-more">Read More →</a>
+            </div>
+            
+            <div class="blog-preview">
+                <div class="blog-title">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore</div>
+                <div class="blog-excerpt">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquips
+                </div>
+                <div class="blog-date">February 2025</div>
+                <a href="/blog" class="read-more">Read More →</a>
+            </div>
+            
+            <a href="/blog" class="blog-link">Read My Blog →</a>
+        </section>
+        
+        <!-- Contact Section -->
+        <section>
+            <h2>Contact</h2>
+            <div class="contact-links">
+                <a href="mailto:tanyaarora@tutamail.com" class="contact-link">
+                    <span class="contact-prefix">Email:</span>
+                    tanyaarora@tutamail.com
+                </a>
+                <a href="https://github.com/tanyactl" class="contact-link">
+                    <span class="contact-prefix">GitHub:</span>
+                    @tanctl
+                </a>
+                <a href="https://x.com/tanya1866" class="contact-link">
+                    <span class="contact-prefix">Twitter:</span>
+                    @tanya1866
+                </a>
+            </div>
+        </section>
+    </div>
+    
+    <footer>
+        <p>&copy; 2025 Tanya. Built with HTML, CSS, and Coffee ☕</p>
+    </footer>
+    
+    <script>
+        // Smooth scroll progress indicator
+        function updateScrollProgress() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = (scrollTop / scrollHeight) * 100;
+            
+            const progressFill = document.getElementById('scrollProgress');
+            progressFill.style.height = progress + '%';
+        }
+        
+        // Throttled scroll event listener for better performance
+        let ticking = false;
+        function handleScroll() {
+            if (!ticking) {
+                requestAnimationFrame(updateScrollProgress);
+                ticking = true;
+                setTimeout(() => ticking = false, 10);
+            }
+        }
+        
+        window.addEventListener('scroll', handleScroll);
+        
+        // Initialize scroll progress on load
+        window.addEventListener('load', updateScrollProgress);
+        
+        // Enhanced focus management for accessibility
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                document.body.classList.add('keyboard-navigation');
+            }
+        });
+        
+        document.addEventListener('mousedown', function() {
+            document.body.classList.remove('keyboard-navigation');
+        });
+        
+        // Subtle hover enhancements for project cards
+        const projectCards = document.querySelectorAll('.project-card');
+        projectCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+        
+        // Blog preview hover effects
+        const blogPreviews = document.querySelectorAll('.blog-preview');
+        blogPreviews.forEach(preview => {
+            preview.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(6px)';
+            });
+            
+            preview.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateX(0)';
+            });
+        });
+    </script>
+</body>
+</html>

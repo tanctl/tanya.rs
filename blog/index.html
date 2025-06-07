@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>blog — coming soon</title>
+    <style>
+        /* Import IBM Plex Mono font */
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&display=swap');
+        
+        /* CSS Variables for consistent theming */
+        :root {
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #1a1a1a;
+            --text-primary: #e5e5e5;
+            --text-secondary: #a0a0a0;
+            --accent-pink: #bc8f8f;
+            --accent-pink-hover: #ffb6c1;
+            --border-color: #2a2a2a;
+            --shadow-color: rgba(212, 165, 165, 0.1);
+            --gradient-start: rgba(64, 64, 64, 0.1);
+            --gradient-end: rgba(32, 32, 32, 0.1);
+        }
+        
+        /* Base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'IBM Plex Mono', monospace;
+            background: var(--bg-primary);
+            background-image: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-size: 16px;
+            font-weight: 400;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            padding: 60px 40px 60px 120px;
+            flex: 1;
+        }
+        
+        /* Navigation */
+        nav {
+            padding: 1rem 0;
+        }
+        
+        nav .container {
+            padding: 0 120px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            color: var(--accent-pink);
+        }
+        
+        /* Main content */
+        .wip-message {
+            text-align: center;
+            padding: 150px 0;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+        }
+        
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            max-width: 600px;
+            font-size: 1rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        footer p {
+            margin: 0 auto;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 40px 24px 40px 60px;
+            }
+            
+            nav .container {
+                padding: 0 60px;
+            }
+            
+            .wip-message {
+                font-size: 1.1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 32px 20px 32px 40px;
+            }
+            
+            nav .container {
+                padding: 0 40px;
+            }
+            
+            .wip-message {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="/" style="color: var(--accent-pink); text-decoration: none;">tanya.rs</a>
+            <div class="nav-links">
+                <a href="/">← Back to Home</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="wip-message">
+            Work in Progress...
+        </div>
+    </div>
+    
+    <footer>
+        <p>&copy; 2025 Tanya. Built with HTML, CSS, and Coffee ☕</p>
+    </footer>
+</body>
+</html> 
