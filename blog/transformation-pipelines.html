@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformation Pipelines Across Domains - ~/tanya/blog</title>
+    <style>
+        /* Import IBM Plex Mono font */
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&display=swap');
+        
+        /* CSS Variables for consistent theming */
+        :root {
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #1a1a1a;
+            --text-primary: #e5e5e5;
+            --text-secondary: #a0a0a0;
+            --accent-pink: #bc8f8f;
+            --accent-pink-hover: #ffb6c1;
+            --border-color: #2a2a2a;
+            --shadow-color: rgba(212, 165, 165, 0.1);
+            --gradient-start: rgba(64, 64, 64, 0.1);
+            --gradient-end: rgba(32, 32, 32, 0.1);
+            --code-bg: #1a1a1a;
+            --code-border: #2a2a2a;
+        }
+        
+        /* Text selection styling */
+        ::selection {
+            background-color: var(--accent-pink);
+            color: var(--bg-primary);
+        }
+        
+        ::-moz-selection {
+            background-color: var(--accent-pink);
+            color: var(--bg-primary);
+        }
+        
+        /* Base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'IBM Plex Mono', monospace;
+            background: var(--bg-primary);
+            background-image: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-size: 16px;
+            font-weight: 400;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
+        
+        /* Scroll progress bar */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 3px;
+            background: var(--border-color);
+            z-index: 1000;
+        }
+        
+        .scroll-progress-fill {
+            height: 0%;
+            width: 100%;
+            background: linear-gradient(to bottom, var(--accent-pink), var(--border-color));
+            transition: height 0.1s ease;
+        }
+        
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1.2rem 0;
+            background: var(--bg-primary);
+            backdrop-filter: blur(10px);
+            border-bottom: 0.5px solid rgba(188, 143, 143, 0.4);
+            z-index: 1000;
+        }
+        
+        nav .container {
+            padding: 0 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            color: var(--accent-pink) !important;
+            text-decoration: none !important;
+            font-weight: 500;
+        }
+        
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .nav-links a:hover {
+            color: var(--accent-pink);
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            padding: 120px 5% 10px 8%;
+            flex: 1;
+        }
+        
+        /* Typography */
+        .blog-header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            margin-top: 20px;
+        }
+        
+        .blog-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--accent-pink);
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+        
+        .blog-meta {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+        
+        .blog-excerpt {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            max-width: 90%;
+            opacity: 0.85;
+            font-style: italic;
+            margin-top: 16px;
+        }
+        
+        /* Blog content */
+        .blog-content {
+            max-width: 100%;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+        
+        .blog-header {
+            max-width: 100%;
+        }
+        
+        .blog-content h1 {
+            font-size: 2rem;
+            font-weight: 500;
+            color: var(--accent-pink);
+            margin: 40px 0 20px 0;
+            letter-spacing: -0.02em;
+        }
+        
+        .blog-content h2 {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--accent-pink);
+            margin-bottom: 16px;
+            text-transform: none;
+            letter-spacing: 0.02em;
+        }
+        
+        .blog-content h3 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .blog-content h4 {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .blog-content p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            max-width: 85%;
+            font-size: 1rem;
+        }
+        
+        .blog-content ul, .blog-content ol {
+            margin: 15px 0 15px 25px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .blog-content li {
+            margin-bottom: 6px;
+            line-height: 1.6;
+        }
+        
+        .blog-content strong {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        /* Links */
+        .blog-content a {
+            color: var(--accent-pink);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid transparent;
+        }
+        
+        .blog-content a:hover {
+            color: var(--accent-pink-hover);
+            border-bottom-color: var(--accent-pink-hover);
+        }
+        
+        /* Project name links - styled to look like regular italic text */
+        .project-link {
+            color: var(--text-primary) !important;
+            text-decoration: none;
+            font-style: italic;
+            border: none !important;
+        }
+        
+        .project-link:hover {
+            color: var(--accent-pink) !important;
+            border: none !important;
+        }
+        
+        /* Code blocks */
+        .blog-content pre {
+            background: var(--code-bg);
+            border: 1px solid var(--code-border);
+            border-radius: 6px;
+            padding: 16px;
+            margin: 16px 0;
+            overflow-x: auto;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .blog-content code {
+            background: var(--code-bg);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            font-family: 'IBM Plex Mono', monospace;
+        }
+        
+        .blog-content pre code {
+            background: none;
+            padding: 0;
+            border-radius: 0;
+        }
+        
+        /* Blockquotes */
+        .blog-content blockquote {
+            border-left: 3px solid var(--accent-pink);
+            padding-left: 20px;
+            margin: 24px 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        
+        /* Horizontal rules */
+        .blog-content hr {
+            border: none;
+            height: 1px;
+            background: var(--border-color);
+            margin: 40px 0;
+        }
+        
+        /* Table styles */
+        .blog-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+        }
+        
+        .blog-content th,
+        .blog-content td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .blog-content th {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .blog-content td {
+            color: var(--text-secondary);
+        }
+        
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 15px;
+        }
+        
+        footer p {
+            margin: 0 auto;
+            max-width: none;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            nav {
+                padding: 1rem 0;
+            }
+            
+            .container {
+                padding: 80px 60px 10px 60px;
+            }
+            
+            nav .container {
+                padding: 0 60px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            nav {
+                padding: 0.8rem 0;
+            }
+            
+            .container {
+                padding: 70px 40px 10px 40px;
+            }
+            
+            nav .container {
+                padding: 0 40px;
+            }
+        }
+        
+    </style>
+</head>
+<body>
+    <!-- Scroll progress indicator -->
+    <div class="scroll-progress">
+        <div class="scroll-progress-fill" id="scrollProgress"></div>
+    </div>
+    
+    <nav>
+        <div class="container">
+            <a href="/" class="logo">tanya.rs</a>
+            <div class="nav-links">
+                <a href="/blog">← Back to Blog</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="blog-header">
+            <h1 class="blog-title">Transformation Pipelines Across Domains: Patterns in Circuit Compilation and Data Processing</h1>
+            <div class="blog-meta">August 2025 • 12 min read</div>
+            <div class="blog-excerpt">
+                Exploring how architectural patterns learned from building a zero-knowledge circuit compiler directly applied to implementing a structured data converter, revealing universal principles in transformation pipeline design.
+            </div>
+        </div>
+        
+        <div class="blog-content">
+            <p>I began building <a href="https://github.com/tanctl/camellia" class="project-link" target="_blank">Camellia</a>, a zero-knowledge circuit compiler, as a way to explore how circuit descriptions could be compiled to R1CS constraint systems. This involved designing a domain-specific language for writing cryptographic circuits, implementing constraint generation algorithms, and building a complete compilation pipeline from high-level circuit descriptions to mathematical proof systems.</p>
+
+            <p>Later, as part of my LFX internship application, I had to complete a coding challenge that required building a structured data converter - <a href="https://github.com/tanctl/sx" class="project-link" target="_blank">sx</a>, which transforms JSON, YAML, and TOML into S-expressions. On the surface, this seemed like a straightforward data munging task compared to the mathematical complexity of zero-knowledge circuits.</p>
+
+            <p>But as I implemented <em>sx</em>, something felt eerily familiar despite the significant difference in domain complexity. Strip away the domain specifics, the field arithmetic, the hash functions, the JSON parsing quirks, and you're left with very similar architectural challenges.</p>
+
+            <h2>The Common Pattern</h2>
+
+            <p>Both projects follow the same basic transformation pipeline:</p>
+
+            <p><strong><em>Camellia</em>:</strong></p>
+            <pre><code>Circuit DSL → Parse → AST → Compiler → R1CS → Output (JSON/Circom/etc)</code></pre>
+
+            <p><strong><em>sx</em>:</strong></p>
+            <pre><code>JSON/YAML/TOML → Parse → AST → Transform → S-expressions → Output</code></pre>
+
+            <p>At the architectural level, they're both implementing compilers with similar phases: lexical analysis, parsing to an intermediate representation, transformation, and code generation. The difference is just what they're compiling - circuit descriptions vs data formats.</p>
+
+            <h2>Architectural Patterns Across Complexity Levels</h2>
+
+            <h3>1. AST Design as the Core Abstraction</h3>
+
+            <p>The most instructive comparison lies in how both projects approach intermediate representation design, albeit at very different complexity levels.</p>
+
+            <p><em>Camellia's</em> AST design was genuinely complex - it needed to capture circuit semantics, support mathematical operations over finite fields, and enable efficient constraint generation:</p>
+
+            <pre><code>type expr =
+  | Var of string
+  | Const of string  
+  | Add of expr * expr
+  | Mul of expr * expr
+  | Equal of expr * expr
+  | Poseidon of expr list
+
+type stmt =
+  | Constraint of expr
+  | Assign of string * expr</code></pre>
+
+            <p>The design choices here directly impact compilation complexity. For instance, having <code>Equal</code> as an expression rather than just in constraints allows for more flexible constraint generation, but requires careful handling during R1CS conversion. Each variant maps to specific constraint generation patterns in the finite field.</p>
+
+            <p><em>sx's</em> AST requirements were simpler but followed the same fundamental principle - design an intermediate representation that unifies disparate inputs while preserving semantic information:</p>
+
+            <pre><code>type value =
+  | Null of Position.t
+  | Bool of bool * Position.t
+  | Int of int * Position.t
+  | Float of float * Position.t
+  | String of string * Position.t
+  | List of value list * Position.t
+  | Assoc of (string * value) list * Position.t</code></pre>
+
+            <p>While much simpler than <em>Camellia's</em> mathematical constraints, <em>sx's</em> AST demonstrates the same core principle: a well-designed intermediate representation enables clean separation between parsing and generation phases. The position tracking serves the same fundamental purpose as <em>Camellia's</em> constraint metadata - preserving source context through transformation.</p>
+
+            <h3>2. Error Handling and Position Tracking</h3>
+
+            <p>Both projects needed comprehensive error handling systems, but with different requirements.</p>
+
+            <p><em>Camellia's</em> error handling requirements were complex due to the multi-stage compilation process. The system needed to handle syntax errors in the circuit DSL, semantic errors in variable binding and type checking, and mathematical errors during constraint generation:</p>
+
+            <pre><code>type error_kind =
+  | ParseError of string | UnexpectedToken of string * string
+  | TypeError of string | UnboundVariable of string
+  | CryptoError of string | InvalidFieldElement of string
+  | R1CSError of string | ConstraintUnsatisfiable of string
+  | CircuitError of string | WitnessGenerationFailed of string
+  (* ... 15+ total error variants for comprehensive coverage *)
+
+type error = {
+  kind: error_kind;
+  position: position option;
+  message: string;
+}</code></pre>
+
+            <p>The challenge lies in mapping constraint generation errors back to source locations - when a mathematical constraint fails, you need to trace it back through the compilation pipeline to the original circuit description.</p>
+
+            <p><em>sx's</em> error handling was more straightforward but applied the same architectural principles. The main challenge was providing consistent error reporting across different input formats:</p>
+
+            <pre><code>type error_kind =
+  | ParseError of string | TypeError of string | IOError of string
+  | UnsupportedFeature of string | FormatDetectionError of string
+
+type error = {
+  kind : error_kind;
+  position : Position.t;
+  source_context : string option;
+}
+
+type validation_result = {
+  filename : string;
+  success : bool;
+  error : error option;
+  warning_count : int;
+}</code></pre>
+
+            <p>The streaming mode adds another layer of complexity - errors need to be reported without stopping the entire stream, which requires careful error recovery strategies.</p>
+
+            <h3>3. Performance vs Generality Trade-offs</h3>
+
+            <p>The projects took different approaches to the performance/flexibility trade-off, which became clear as I worked on both.</p>
+
+            <p>With <em>Camellia</em>, I optimized heavily for constraint system efficiency:</p>
+            <ul>
+                <li>Constant reuse to minimize R1CS size (fewer constraints = faster proving)</li>
+                <li>Wire allocation strategies that reduce constraint complexity</li>
+                <li>Field arithmetic optimized for the BN254 curve</li>
+            </ul>
+
+            <p>This specialization pays off - a hash preimage circuit compiles to just 5 constraints with 6 variables. But it's completely domain-specific.</p>
+
+            <p>For <em>sx</em>, the coding challenge requirements pushed me in a different direction - towards operational flexibility:</p>
+            <ul>
+                <li>Auto-detection handles mixed file types without configuration</li>
+                <li>Streaming processing provides constant memory usage for arbitrarily large inputs</li>
+                <li>Multiple output formats (Common Lisp vs Scheme S-expressions)</li>
+            </ul>
+
+            <p>The streaming implementation is particularly interesting. Instead of loading entire files into memory, it processes JSON arrays and JSON Lines incrementally:</p>
+
+            <pre><code>type 'a stream_result = 
+  | StreamItem of 'a
+  | StreamEnd  
+  | StreamError of string</code></pre>
+
+            <p>This enables processing multi-gigabyte files with constant memory usage (using 8KB configurable buffers), but adds significant implementation complexity compared to batch processing.</p>
+
+            <h3>4. Compilation Pipeline Implementation Details</h3>
+
+            <p>Both projects implement multi-stage compilation pipelines, but with very different complexity levels in each stage.</p>
+
+            <p><strong><em>Camellia's</em> compilation stages:</strong></p>
+
+            <ol>
+                <li><strong>Lexing/Parsing</strong>: Uses Menhir parser generator with custom lexer. The grammar handles circuit syntax including field operations, variable bindings, and constraint assertions:
+                <pre><code>circuit HashPreimage {
+  inputs: expected_hash
+  private inputs: preimage
+  computed_hash = poseidon(preimage)
+  assert computed_hash == expected_hash
+}</code></pre></li>
+
+                <li><strong>Semantic Analysis</strong>: Implements scope checking with variable binding validation. The compiler maintains a compilation context:
+                <pre><code>type compilation_context = {
+  debug_ctx: debug_context;
+  wire_manager: R1cs.wire_manager;
+  r1cs: R1cs.r1cs_system;
+  variable_bindings: (string, R1cs.wire_id) Hashtbl.t;
+  scope_stack: (string, R1cs.wire_id) Hashtbl.t list;
+}</code></pre></li>
+
+                <li><strong>Constraint Generation</strong>: The core complexity lies here - converting high-level operations to quadratic constraints. For example, addition becomes:
+                <pre><code>let create_addition_constraint a_wire b_wire sum_wire =
+  let a_lc = add_term a_wire Field.one (add_term b_wire Field.one empty_linear_combination) in
+  let b_lc = add_term 0 Field.one empty_linear_combination in
+  let c_lc = add_term sum_wire Field.one empty_linear_combination in
+  create_constraint a_lc b_lc c_lc</code></pre></li>
+
+                <li><strong>Wire Management</strong>: Implements sophisticated allocation and reuse:
+                <pre><code>type wire_manager = {
+  mutable next_id: wire_id;
+  mutable wires: (wire_id, wire_info) Hashtbl.t;
+  mutable name_to_id: (string, wire_id) Hashtbl.t;
+}</code></pre>
+                This enables constant deduplication - when the same constant appears multiple times, it reuses the same wire, reducing constraint count from potentially hundreds to just 5 constraints for a hash preimage circuit.</li>
+
+                <li><strong>Backend Generation</strong>: Supports multiple output formats with different constraint representations for Circom, Bellman, and raw JSON.</li>
+            </ol>
+
+            <p><strong><em>sx's</em> transformation stages:</strong></p>
+
+            <ol>
+                <li><strong>Format Detection</strong>: Implements heuristic-based detection combining file extensions and content analysis:
+                <pre><code>let detect_by_content content =
+  let trimmed = String.trim content in
+  if trimmed = "" then None
+  else
+    let first_char = trimmed.[0] in
+    match first_char with
+    | '{' | '"' -> Some Ast.JSON
+    | '[' -> 
+        if String.contains content '=' then Some Ast.TOML else Some Ast.JSON
+    | '-' when String.length trimmed > 2 && trimmed.[1] = '-' && trimmed.[2] = '-' -> 
+        Some Ast.YAML
+    | _ ->
+        if String.contains trimmed '=' && String.contains trimmed ':' then
+          Some Ast.TOML
+        else if String.contains trimmed ':' && not (String.contains trimmed '{') then
+          Some Ast.YAML</code></pre></li>
+
+                <li><strong>Streaming Architecture</strong>: The most complex part of <em>sx</em> is the streaming JSON parser that handles large files with constant memory:
+                <pre><code>let parse_json_array_stream ~filename channel =
+  let state = ref `ExpectOpenBracket in
+  let current_item = Buffer.create 256 in
+  let brace_depth = ref 0 in
+  let in_string = ref false in
+  (* incremental parsing logic *)</code></pre></li>
+
+                <li><strong>S-expression Generation</strong>: Different generators for Common Lisp vs Scheme with distinct association list representations:
+                <pre><code>(* Common Lisp: simple association lists *)
+| Ast.Assoc (assoc, _) ->
+    let pairs = List.map (fun (key, value) ->
+      Ast.List [Ast.Atom (escape_string key); ast_to_sexp value]
+    ) assoc in
+    Ast.List pairs
+
+(* Scheme: explicit constructors with cons *)
+| Ast.Assoc (assoc, _) ->
+    let pairs = List.map (fun (key, value) ->
+      Ast.List [Ast.Atom "cons"; Ast.Atom (escape_string key); ast_to_sexp value]
+    ) assoc in
+    Ast.List (Ast.Atom "list" :: pairs)</code></pre>
+
+                <p>The key difference: Common Lisp output generates nested lists <code>(("name" "Lua") ("age" 4))</code> while Scheme output uses explicit constructors <code>(list (cons "name" "Lua") (cons "age" 4))</code>.</p></li>
+            </ol>
+
+            <p>The key insight is that while <em>sx's</em> individual stages are simpler, the architectural patterns remain consistent: lexical analysis, intermediate representation, transformation, and generation.</p>
+
+            <h2>Lessons from Complex to Simple</h2>
+
+            <p>What struck me was how architectural principles learned from building <em>Camellia's</em> complex compilation pipeline directly informed the simpler <em>sx</em> implementation. The mathematical complexity of zero-knowledge circuits forced me to think carefully about compilation architecture, and those same patterns proved valuable even for straightforward data conversion.</p>
+
+            <p>Some specific insights that transferred from the complex domain to the practical one:</p>
+
+            <p><strong>Error Recovery Strategies</strong>: The comprehensive error handling I developed for <em>Camellia</em> informed how I approached <em>sx's</em> multi-format parsing challenges. Both needed to provide actionable feedback without halting the entire process.</p>
+
+            <p><strong>AST Design Principles</strong>: The position tracking patterns I learned from <em>Camellia's</em> constraint-to-source mapping proved directly applicable to <em>sx's</em> error reporting across different input formats.</p>
+
+            <p><strong>Performance Profiling</strong>: Having built performance analysis into <em>Camellia's</em> constraint generation, I knew to include similar pipeline timing/memory tracking in <em>sx</em> from the start.</p>
+
+            <h2>Universal Patterns in Transformation Pipelines</h2>
+
+            <p>Building a complex DSL like <em>Camellia</em> and then applying those patterns to a practical tool like <em>sx</em> reinforced several architectural principles that seem to hold regardless of domain complexity:</p>
+
+            <ol>
+                <li><strong>Intermediate representations matter more than you think</strong> - The AST design constraints everything downstream</li>
+                <li><strong>Error handling is architectural, not tactical</strong> - Plan for failure modes from the start</li>
+                <li><strong>Performance optimization requires choosing a target</strong> - General-purpose flexibility and domain-specific performance are fundamentally in tension</li>
+                <li><strong>Streaming is a different paradigm</strong> - Memory-bounded processing requires rethinking the entire pipeline</li>
+            </ol>
+
+            <h2>Deep Technical Implementation Details</h2>
+
+            <p><strong><em>Camellia's</em> Mathematical Foundation:</strong></p>
+
+            <p>The core complexity lies in R1CS (Rank-1 Constraint System) generation. Each constraint has the form <code>A × B = C</code> where A, B, C are linear combinations of wires:</p>
+
+            <pre><code>type constraint_triple = {
+  a: linear_combination;  (* Σ(coeff_i × wire_i) *)
+  b: linear_combination;
+  c: linear_combination;
+}</code></pre>
+
+            <p>For a simple multiplication <code>x * y = z</code>, this becomes:</p>
+            <ul>
+                <li>A = wire_x (coefficient 1)</li>
+                <li>B = wire_y (coefficient 1)</li>
+                <li>C = wire_z (coefficient 1)</li>
+            </ul>
+
+            <p>But addition requires encoding as multiplication: <code>(x + y) * 1 = sum</code>, demonstrating why R1CS is a challenging compilation target.</p>
+
+            <p>The constraint generation uses field arithmetic over BN254 (modulus: <code>21888242871839275222246405745257275088696311157297823662689037894645226208583</code>):</p>
+
+            <pre><code>let compile_add ctx e1 e2 =
+  let* (result1, ctx1) = compile_expr ctx e1 in
+  let* (result2, ctx2) = compile_expr ctx1 e2 in
+  let wire_name = Printf.sprintf "add_%d_%d" result1.wire_id result2.wire_id in
+  let* (sum_wire, ctx3) = allocate_wire ctx2 wire_name R1cs.Intermediate () in
+  let addition_constraint = R1cs.create_addition_constraint result1.wire_id result2.wire_id sum_wire in
+  let final_ctx = add_constraint_to_context ctx3 addition_constraint in
+  let all_constraints = result1.constraints @ result2.constraints @ [addition_constraint] in
+  Ok ({ wire_id = sum_wire; constraints = all_constraints }, final_ctx)</code></pre>
+
+            <p>The actual <code>create_addition_constraint</code> implements the R1CS encoding:</p>
+
+            <pre><code>let create_addition_constraint a_wire b_wire sum_wire =
+  let a_lc = add_term a_wire Field.one (add_term b_wire Field.one empty_linear_combination) in
+  let b_lc = add_term 0 Field.one empty_linear_combination in
+  let c_lc = add_term sum_wire Field.one empty_linear_combination in
+  create_constraint a_lc b_lc c_lc</code></pre>
+
+            <p>This creates the constraint <code>(a_wire + b_wire) × 1 = sum_wire</code>, where wire 0 represents the constant 1.</p>
+
+            <p>The field arithmetic implementation validates all values against the BN254 modulus:</p>
+
+            <pre><code>let validate_field_string s =
+  if String.length s = 0 then
+    Error (invalid_field_element s ~context:"empty string" ())
+  else if String.for_all (function '0'..'9' -> true | _ -> false) s then
+    if String.length s > String.length bn254_modulus then
+      Error (invalid_field_element s ~context:"exceeds field modulus" ())
+    else Ok s
+  else Error (invalid_field_element s ~context:"non-numeric characters" ())</code></pre>
+
+            <p>Constraint validation ensures mathematical soundness by checking <code>A × B = C</code> for each constraint:</p>
+
+            <pre><code>let validate_constraint constraint_triple witness =
+  let* a_val = evaluate_linear_combination constraint_triple.a witness in
+  let* b_val = evaluate_linear_combination constraint_triple.b witness in
+  let* c_val = evaluate_linear_combination constraint_triple.c witness in
+  let* ab_product = Field.mul a_val b_val in
+  let* equal_result = field_equal_evaluated (Field.to_string ab_product) (Field.to_string c_val) in
+  if equal_result then Ok () else
+    Result.Error (constraint_unsatisfiable 
+      (Printf.sprintf "Constraint not satisfied: (%s) * (%s) != (%s)" 
+        (Field.to_string a_val) (Field.to_string b_val) (Field.to_string c_val)) ())</code></pre>
+
+            <p><strong><em>sx's</em> Multi-Format Processing Architecture:</strong></p>
+
+            <p>The complexity of <em>sx</em> lies in unifying three distinct data formats with different parsing paradigms, type systems, and structural conventions into a coherent transformation pipeline.</p>
+
+            <p><strong>Format Detection and Unified Processing:</strong></p>
+
+            <p>The system implements heuristics combining file extensions and content analysis to automatically detect input formats:</p>
+
+            <pre><code>let detect_format ~filename content =
+  let ext_hint = match Filename.extension filename with
+    | ".json" | ".jsonl" -> Some JSON | ".yaml" | ".yml" -> Some YAML  
+    | ".toml" -> Some TOML | _ -> None in
+  let content_hint = match String.trim content with
+    | s when String.length s > 0 -> (match s.[0] with
+        | '{' | '[' | '"' -> Some JSON
+        | _ when String.contains content ':' && not (String.contains content '=') -> Some YAML
+        | _ when String.contains content '=' -> Some TOML
+        | _ -> None)
+    | _ -> None in
+  match ext_hint, content_hint with
+  | Some fmt, _ -> fmt | None, Some fmt -> fmt | None, None -> JSON</code></pre>
+
+            <p><strong>Multi-Format Parsing Challenges:</strong></p>
+
+            <p>Each format presents unique architectural challenges that must be unified into a common AST:</p>
+
+            <ul>
+                <li><strong>YAML</strong>: Whitespace-sensitive syntax with aggressive type inference (<code>"123"</code> becomes an integer, not a string)</li>
+                <li><strong>TOML</strong>: INI-style sections with strongly-typed values and nested table structures</li>
+                <li><strong>JSON</strong>: Streaming requirements for large arrays while maintaining constant memory usage</li>
+            </ul>
+
+            <p>The key insight is that despite different surface syntax, all three map to the same core data structures: primitives, lists, and association lists.</p>
+
+            <p><strong>Unified Error Handling Architecture:</strong></p>
+
+            <p>The system standardizes error reporting across formats with format-specific recovery suggestions:</p>
+
+            <pre><code>let standardize_error ~filename ~format = function
+  | JSON_Error (line, col, msg) -> { filename; format = JSON; position = Some { line; col };
+      message = sprintf "JSON: %s" msg; recovery = "Check for missing commas or quotes" }
+  | YAML_Error (line, col, msg) -> { filename; format = YAML; position = Some { line; col };
+      message = sprintf "YAML: %s" msg; recovery = "Verify consistent indentation" }
+  | TOML_Error (line, col, msg) -> { filename; format = TOML; position = Some { line; col };
+      message = sprintf "TOML: %s" msg; recovery = "Check section headers and value types" }</code></pre>
+
+            <p><strong>S-Expression Generation Variants:</strong></p>
+
+            <p>The output stage demonstrates how the same AST can generate different S-expression dialects:</p>
+
+            <pre><code>(* Common Lisp: simple association lists *)
+| Ast.Assoc assoc -> 
+    let pairs = List.map (fun (k,v) -> Ast.List [Ast.Atom k; to_lisp v]) assoc in
+    Ast.List pairs
+
+(* Scheme: explicit constructors *)
+| Ast.Assoc assoc -> 
+    let pairs = List.map (fun (k,v) -> Ast.List [Ast.Atom "cons"; Ast.Atom k; to_scheme v]) assoc in
+    Ast.List (Ast.Atom "list" :: pairs)</code></pre>
+
+            <p><strong>Performance and Memory Patterns:</strong></p>
+
+            <p>Different formats exhibit distinct performance characteristics:</p>
+            <ul>
+                <li><strong>JSON streaming</strong>: Constant memory usage for arbitrarily large arrays through incremental processing</li>
+                <li><strong>YAML processing</strong>: Higher memory overhead due to indentation analysis requirements</li>
+                <li><strong>TOML parsing</strong>: Additional overhead from section preprocessing and table resolution</li>
+            </ul>
+
+            <p>The automatic streaming threshold of 1MB reflects a practical balance between simplicity for small files and memory efficiency for large datasets.</p>
+
+        </div>
+    </div>
+    
+    <footer>
+        <p>&copy; 2025 Tanya. Built with HTML, CSS, and Coffee ☕</p>
+    </footer>
+    
+    <script>
+        // Smooth scroll progress indicator
+        function updateScrollProgress() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = (scrollTop / scrollHeight) * 100;
+            
+            const progressFill = document.getElementById('scrollProgress');
+            progressFill.style.height = progress + '%';
+        }
+        
+        // Throttled scroll event listener for better performance
+        let ticking = false;
+        function handleScroll() {
+            if (!ticking) {
+                requestAnimationFrame(updateScrollProgress);
+                ticking = true;
+                setTimeout(() => ticking = false, 10);
+            }
+        }
+        
+        window.addEventListener('scroll', handleScroll);
+        
+        // Initialize scroll progress on load
+        window.addEventListener('load', updateScrollProgress);
+    </script>
+</body>
+</html>

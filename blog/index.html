@@ -22,6 +22,17 @@
             --gradient-end: rgba(32, 32, 32, 0.1);
         }
         
+        /* Text selection styling */
+        ::selection {
+            background-color: var(--accent-pink);
+            color: var(--bg-primary);
+        }
+        
+        ::-moz-selection {
+            background-color: var(--accent-pink);
+            color: var(--bg-primary);
+        }
+        
         /* Base styles */
         * {
             margin: 0;
@@ -46,42 +57,133 @@
             width: 100%;
             max-width: 100%;
             margin: 0;
-            padding: 60px 40px 60px 120px;
+            padding: 120px 5% 60px 8%;
             flex: 1;
+        }
+        
+        /* Scroll progress bar */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 3px;
+            background: var(--border-color);
+            z-index: 1000;
+        }
+        
+        .scroll-progress-fill {
+            height: 0%;
+            width: 100%;
+            background: linear-gradient(to bottom, var(--accent-pink), var(--border-color));
+            transition: height 0.1s ease;
         }
         
         /* Navigation */
         nav {
-            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1.2rem 0;
+            background: var(--bg-primary);
+            backdrop-filter: blur(10px);
+            border-bottom: 0.5px solid rgba(188, 143, 143, 0.4);
+            z-index: 1000;
         }
         
         nav .container {
-            padding: 0 120px;
+            padding: 0 8%;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
+        .logo {
+            color: var(--accent-pink) !important;
+            text-decoration: none !important;
+            font-weight: 500;
+        }
+        
         .nav-links a {
-            color: var(--text-primary);
+            color: var(--text-secondary);
             text-decoration: none;
             transition: color 0.3s ease;
+            font-size: 0.9rem;
         }
         
         .nav-links a:hover {
             color: var(--accent-pink);
         }
         
-        /* Main content */
-        .wip-message {
-            text-align: center;
-            padding: 150px 0;
-            color: var(--text-secondary);
+        /* Blog listing styles */
+        .blog-listing {
+            max-width: 800px;
+            margin-top: 20px;
+        }
+        
+        .blog-listing h1 {
+            font-size: clamp(1.8rem, 4vw, 2.3rem);
+            font-weight: 500;
+            color: var(--accent-pink);
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+        }
+        
+        .blog-post-preview {
+            background: var(--bg-secondary);
+            border-left: 3px solid var(--accent-pink);
+            padding: 20px 24px;
+            margin: 16px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .blog-post-preview:hover {
+            background: rgba(26, 26, 26, 0.8);
+            transform: translateX(4px);
+        }
+        
+        .blog-post-preview .blog-title {
+            color: var(--text-primary);
             font-size: 1.1rem;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .blog-post-preview .blog-title a {
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .blog-post-preview:hover .blog-title a {
+            color: var(--accent-pink);
+        }
+        
+        .blog-date {
+            color: var(--accent-pink);
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .blog-excerpt {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+        }
+        
+        .read-more {
+            font-size: 0.9rem;
+            color: var(--accent-pink);
+            margin-top: 8px;
+            display: inline-block;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .read-more:hover {
+            color: var(--accent-pink-hover);
+            transform: translateX(4px);
         }
         
         p {
@@ -105,38 +207,43 @@
         
         /* Responsive design */
         @media (max-width: 768px) {
+            nav {
+                padding: 1rem 0;
+            }
+            
             .container {
-                padding: 40px 24px 40px 60px;
+                padding: 80px 60px 40px 60px;
             }
             
             nav .container {
                 padding: 0 60px;
             }
-            
-            .wip-message {
-                font-size: 1.1rem;
-            }
         }
         
         @media (max-width: 480px) {
+            nav {
+                padding: 0.8rem 0;
+            }
+            
             .container {
-                padding: 32px 20px 32px 40px;
+                padding: 70px 40px 32px 40px;
             }
             
             nav .container {
                 padding: 0 40px;
             }
-            
-            .wip-message {
-                font-size: 1rem;
-            }
         }
     </style>
 </head>
 <body>
+    <!-- Scroll progress indicator -->
+    <div class="scroll-progress">
+        <div class="scroll-progress-fill" id="scrollProgress"></div>
+    </div>
+    
     <nav>
         <div class="container">
-            <a href="/" style="color: var(--accent-pink); text-decoration: none;">tanya.rs</a>
+            <a href="/" class="logo">tanya.rs</a>
             <div class="nav-links">
                 <a href="/">← Back to Home</a>
             </div>
@@ -144,13 +251,49 @@
     </nav>
     
     <div class="container">
-        <div class="wip-message">
-            Work in Progress..
+        <div class="blog-listing">
+            <h1>Blog Posts</h1>
+            
+            <div class="blog-post-preview">
+                <div class="blog-title"><a href="/blog/transformation-pipelines.html">Transformation Pipelines Across Domains: Patterns in Circuit Compilation and Data Processing</a></div>
+                <div class="blog-excerpt">
+                    Exploring how architectural patterns learned from building a zero-knowledge circuit compiler directly applied to implementing a structured data converter, revealing universal principles in transformation pipeline design.
+                </div>
+                <div class="blog-date">August 2025</div>
+                <a href="/blog/transformation-pipelines.html" class="read-more">Read More →</a>
+            </div>
         </div>
     </div>
     
     <footer>
         <p>&copy; 2025 Tanya. Built with HTML, CSS, and Coffee ☕</p>
     </footer>
+    
+    <script>
+        // Smooth scroll progress indicator
+        function updateScrollProgress() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = (scrollTop / scrollHeight) * 100;
+            
+            const progressFill = document.getElementById('scrollProgress');
+            progressFill.style.height = progress + '%';
+        }
+        
+        // Throttled scroll event listener for better performance
+        let ticking = false;
+        function handleScroll() {
+            if (!ticking) {
+                requestAnimationFrame(updateScrollProgress);
+                ticking = true;
+                setTimeout(() => ticking = false, 10);
+            }
+        }
+        
+        window.addEventListener('scroll', handleScroll);
+        
+        // Initialize scroll progress on load
+        window.addEventListener('load', updateScrollProgress);
+    </script>
 </body>
 </html> 
